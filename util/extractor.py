@@ -17,11 +17,17 @@ import pdb;
 
 def go_album(url,browser):
     browser.get(url)
+    print("url로 접속")
     browser.implicitly_wait(5)
+
     browser.execute_script("ta.plc_resp_photo_mosaic_ar_responsive_0_handlers.openPhotoViewer();")
+    print("앨범 클릭")
     browser.implicitly_wait(5)
+
     browser.find_elements_by_css_selector(".photoGridImg")[0].click()
+    print("첫번째 사진 클릭")
     browser.implicitly_wait(5)
+    
 
 def get_data_from_thumb(browser):
     resDict = { 'media_id' : [], 'img_url' : [],'review_url':[],'display_date':[] }

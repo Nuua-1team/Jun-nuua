@@ -5,33 +5,25 @@ import pdb
 if __name__ == "__main__":
 
     options = webdriver.ChromeOptions()
-    # options.add_argument('headless')
+    options.add_argument('headless')
     options.add_argument('window-size=1920x1080')
     options.add_argument("disable-gpu")
     browser = webdriver.Chrome('chromedriver', chrome_options=options)
+
     try:
         # 일단 경복궁만
-
-
-
         url = "https://www.tripadvisor.co.kr/Attraction_Review-g294197-d324888-Reviews-Gyeongbokgung_Palace-Seoul.html"
-        resDict =go_album(url,browser)
+        go_album(url,browser)
 
-        for res in resDict:
-            print(res)
-            for r in resDict[res]:
-                print(r)
+        for i in range(3):
+            resDict = get_data_from_thumb(browser)
+            # 확인용 프린트
+            for res in resDict:
+                print(resDict[res])
+
 
 
     except:
-        print("e")
+        print("error")
     finally:
         browser.close()
-    #
-    #
-#
-#
-#
-#
-#
-#
