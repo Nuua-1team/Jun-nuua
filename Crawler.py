@@ -3,24 +3,18 @@ from util.extractor import *
 import pdb
 
 if __name__ == "__main__":
-
-    options = webdriver.ChromeOptions()
-    options.add_argument('headless')
-    options.add_argument('window-size=1920x1080')
-    options.add_argument("disable-gpu")
-    browser = webdriver.Chrome('chromedriver', chrome_options=options)
-
     try:
+        browser = CrawlBrowser()
         # 일단 경복궁만
         url = "https://www.tripadvisor.co.kr/Attraction_Review-g294197-d324888-Reviews-Gyeongbokgung_Palace-Seoul.html"
-        go_album(url,browser)
-
-        for i in range(3):
-            resDict = get_data_from_thumb(browser)
+        browser.go_album(url)
+        resDict = browser.get_data_from_thumb()
+        for i in range(10):
             # 확인용 프린트
-            for res in resDict:
-                print(resDict[res])
-
+            #대충 여기서 넣고 디비에 넣고
+            # print(resDict["media_id"])
+            browser.go_next()
+            resDict = browser.get_data_from_thumb()
 
 
     except:
