@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Methods to extract the data for the given usernames profile"""
 # from time import sleep
 # from re import findall
