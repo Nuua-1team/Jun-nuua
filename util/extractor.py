@@ -31,7 +31,6 @@ class CrawlBrowser:
         self.browser.get(url)
         print("url로 접속")
         self.browser.implicitly_wait(10)
-
         self.browser.execute_script("ta.plc_resp_photo_mosaic_ar_responsive_0_handlers.openPhotoViewer();")
         print("앨범 클릭")
         self.browser.implicitly_wait(10)
@@ -39,7 +38,7 @@ class CrawlBrowser:
         self.browser.find_elements_by_css_selector(".photoGridImg")[0].click()
         print("첫번째 사진 클릭")
         self.browser.implicitly_wait(10)
-    
+
 
     def get_data_from_thumb(self):
         print(str(len(self.browser.find_elements_by_css_selector(".tinyThumb")))+"개 가져와따")
@@ -57,11 +56,10 @@ class CrawlBrowser:
     def go_next(self):
         origin_url = self.browser.current_url
         new_url = origin_url.replace(re.findall("\d+", origin_url)[-1], self.resDict["media_id"][-1])
+        self.browser.get("https://www.tripadvisor.co.kr/")
         self.browser.get(new_url)
+        print(new_url)
         self.browser.implicitly_wait(10)
         self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': []}
-        self.browser.execute_script("location.reload();")
+        # self.browser.execute_script("location.reload();")
         self.browser.implicitly_wait(10)
-
-
-
