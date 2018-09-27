@@ -10,8 +10,8 @@ if __name__ == "__main__":
 
         browser = CrawlBrowser()
         # 일단 경복궁만
-        url = "https://www.tripadvisor.co.kr/Attraction_Review-g294197-d324888-Reviews-Gyeongbokgung_Palace-Seoul.html"
-        browser.go_album(url)
+
+        browser.go_album()
         resDict = browser.get_data_from_thumb()
         for i in range(10):
             # 확인용 프린트
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     except:
         print("error")
     finally:
-        browser.close()
+        print("end")

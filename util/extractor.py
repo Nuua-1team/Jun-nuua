@@ -17,6 +17,7 @@ import pdb;
 import re;
 import pymysql;
 import os;
+from selenium.webdriver.common.keys import Keys
 
 class CrawlBrowser:
     # browser = None
@@ -27,7 +28,10 @@ class CrawlBrowser:
         options.add_argument('window-size=1920x1080')
         options.add_argument("disable-gpu")
         self.browser = webdriver.Chrome('chromedriver', chrome_options=options)
-        self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': []}
+        print("크롤링할 앨범 키워드 입력:")
+        self.keyword = input()
+        self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': [],'keyword':self.keyword}
+        self.url = "https://www.tripadvisor.co.kr"
 
         try:
             self.conn = pymysql.connect(
@@ -45,14 +49,26 @@ class CrawlBrowser:
             sys.exit()
 
 
-    def go_album(self, url):
-        self.browser.get(url)
+    def go_album(self):
+        self.browser.get(self.url)
         print("url로 접속")
         self.browser.implicitly_wait(10)
+
+        self.browser.execute_script("placementEvCall('taplc_masthead_search_0', 'deferred/lateHandlers.showSearchOverlay', event, this);");
+        # self.browser.implicitly_wait(10)
+        self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(self.keyword)
+        # self.browser.implicitly_wait(10)
+        self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
+        self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
+        # self.browser.implicitly_wait(10)
+        self.browser.implicitly_wait(10)
+        self.url+=self.browser.find_elements_by_xpath("//div[@class='result-title']//span[text()='"+self.keyword+"']/parent::*")[0].get_attribute("onclick").split("'")[3]
+        self.browser.implicitly_wait(10)
+        self.browser.get(self.url)
+
         self.browser.execute_script("ta.plc_resp_photo_mosaic_ar_responsive_0_handlers.openPhotoViewer();")
         print("앨범 클릭")
         self.browser.implicitly_wait(10)
-
         self.browser.find_elements_by_css_selector(".photoGridImg")[0].click()
         print("첫번째 사진 클릭")
         self.browser.implicitly_wait(10)
@@ -70,9 +86,10 @@ class CrawlBrowser:
 
         return self.resDict
 
-    def close(self):
-        print ("browser closed")
+
+    def __del__(self):
         self.browser.close()
+        print ("browser closed")
 
     def go_next(self):
         origin_url = self.browser.current_url
