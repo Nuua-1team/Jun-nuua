@@ -12,20 +12,38 @@
 # import datetime
 # from util.instalogger import InstaLogger
 # from util.exceptions import PageNotFound404,NoInstaProfilePageFound,NoInstaPostPageFound
-
 from selenium import webdriver
 import pdb;
 import re;
+import pymysql;
+import os;
+
 class CrawlBrowser:
     # browser = None
     # option = None
     def __init__(self):
         options = webdriver.ChromeOptions()
-        options.add_argument('headless')
+        # options.add_argument('headless')
         options.add_argument('window-size=1920x1080')
         options.add_argument("disable-gpu")
         self.browser = webdriver.Chrome('chromedriver', chrome_options=options)
         self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': []}
+
+        try:
+            self.conn = pymysql.connect(
+            host='image-crawling-db.cmvxqjttnu3v.ap-northeast-2.rds.amazonaws.com',
+            port=3306,user='nuua',
+            passwd=os.environ['NUUA_DB_PASS'],
+            db='image_crawling',
+            charset='utf8',
+            cursorclass=pymysql.cursors.DictCursor
+            )
+            self.cursor = self.conn.cursor()
+
+        except pymysql.Error as e:
+            print ("Error %d: %s" % (e.args[0], e.args[1]))
+            sys.exit()
+
 
     def go_album(self, url):
         self.browser.get(url)
@@ -47,6 +65,9 @@ class CrawlBrowser:
             self.resDict['img_url'].append(thumb.get_attribute("data-bigurl"))
             self.resDict['review_url'].append(thumb.get_attribute("data-reviewurl"))
             self.resDict['display_date'].append(thumb.get_attribute("data-displaydate"))
+
+
+
         return self.resDict
 
     def close(self):
