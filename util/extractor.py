@@ -50,17 +50,18 @@ class CrawlBrowser:
 
 
     def go_album(self):
-        self.browser.get(self.url)
+        self.browser.get(self.url+"/Search?uiOrigin=MASTHEAD&q="+self.keyword)
         print("url로 접속")
-        self.browser.implicitly_wait(10)
+        # self.browser.implicitly_wait(10)
 
-        self.browser.execute_script("placementEvCall('taplc_masthead_search_0', 'deferred/lateHandlers.showSearchOverlay', event, this);");
+        # self.browser.execute_script("placementEvCall('taplc_masthead_search_0', 'deferred/lateHandlers.showSearchOverlay', event, this);");
         # self.browser.implicitly_wait(10)
-        self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(self.keyword)
+        # self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(self.keyword)
         # self.browser.implicitly_wait(10)
-        self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
-        self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
+        # self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
+        # self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
         # self.browser.implicitly_wait(10)
+        # pdb.set_trace();
         self.browser.implicitly_wait(10)
         self.url+=self.browser.find_elements_by_xpath("//div[@class='result-title']//span[text()='"+self.keyword+"']/parent::*")[0].get_attribute("onclick").split("'")[3]
         self.browser.implicitly_wait(10)
