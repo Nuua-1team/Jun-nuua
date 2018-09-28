@@ -13,13 +13,13 @@ if __name__ == "__main__":
 
         browser.go_album()
         resDict = browser.get_data_from_thumb()
-        for i in range(1):
+        for i in range(10):
             # 확인용 프린트
             #대충 여기서 넣고 디비에 넣고
             # print(resDict["media_id"])
             browser.go_next()
             resDict = browser.get_data_from_thumb()
-            print(resDict)
+
         print(time.time()-start_time)
 
 
