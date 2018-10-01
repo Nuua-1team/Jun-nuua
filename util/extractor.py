@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Methods to extract the data for the given usernames profile"""
 # from time import sleep
 # from re import findall
 # import math
@@ -10,7 +9,7 @@
 # from .util import web_adress_navigator
 # from util.extractor_posts import extract_post_info
 # import datetime
-# from util.instalogger import InstaLogger
+# from util.instalogger im port InstaLogger
 # from util.exceptions import PageNotFound404,NoInstaProfilePageFound,NoInstaPostPageFound
 from selenium import webdriver
 import pdb;
@@ -22,22 +21,37 @@ from selenium.webdriver.common.keys import Keys
 class CrawlBrowser:
     # browser = None
     # option = None
-    def __init__(self):
+    def __init__(self,keyword):
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         options.add_argument('window-size=1920x1080')
         options.add_argument("disable-gpu")
         self.browser = webdriver.Chrome('chromedriver', chrome_options=options)
-        print("크롤링할 앨범 키워드 입력:")
-        self.keyword = input()
-        self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': [],'keyword':self.keyword}
+
+        self.keyword = keyword
+        # self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': [],'keyword':self.keyword}
+
         self.url = "https://www.tripadvisor.co.kr"
+        # 나중에 database 클래스를 따로 뺄 예정
+        #trip_review_url,trip_gallery_id
+
+
+        self.trip_sql = '''
+        INSERT IGNORE INTO trip_metadata (trip_gallery_id,trip_review_url) VALUES (%s, %s)
+        '''
+        self.img_sql ='''
+        INSERT IGNORE INTO image_info (search_keyword,image_url,trip_idx,crawling_date) VALUES (\'''' + self.keyword+'''\', %s,%s,now())
+        '''
 
         try:
             self.conn = pymysql.connect(
-            host='image-crawling-db.cmvxqjttnu3v.ap-northeast-2.rds.amazonaws.com',
-            port=3306,user='nuua',
-            passwd=os.environ['NUUA_DB_PASS'],
+            # host='image-crawling-db.cmvxqjttnu3v.ap-northeast-2.rds.amazonaws.com',
+            host="",
+            port=3306,
+            # user='nuua',
+            user='root',
+            # passwd=os.environ['NUUA_DB_PASS'],
+            passwd=os.environ['MYSQL_PASS'],
             db='image_crawling',
             charset='utf8',
             cursorclass=pymysql.cursors.DictCursor
@@ -48,20 +62,9 @@ class CrawlBrowser:
             print ("Error %d: %s" % (e.args[0], e.args[1]))
             sys.exit()
 
-
     def go_album(self):
         self.browser.get(self.url+"/Search?uiOrigin=MASTHEAD&q="+self.keyword)
         print("url로 접속")
-        # self.browser.implicitly_wait(10)
-
-        # self.browser.execute_script("placementEvCall('taplc_masthead_search_0', 'deferred/lateHandlers.showSearchOverlay', event, this);");
-        # self.browser.implicitly_wait(10)
-        # self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(self.keyword)
-        # self.browser.implicitly_wait(10)
-        # self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
-        # self.browser.find_elements_by_css_selector("#mainSearch")[0].send_keys(Keys.ENTER)
-        # self.browser.implicitly_wait(10)
-        # pdb.set_trace();
         self.browser.implicitly_wait(10)
         self.url+=self.browser.find_elements_by_xpath("//div[@class='result-title']//span[text()='"+self.keyword+"']/parent::*")[0].get_attribute("onclick").split("'")[3]
         self.browser.implicitly_wait(10)
@@ -75,30 +78,45 @@ class CrawlBrowser:
         self.browser.implicitly_wait(10)
 
 
+    def insert_data(self,trip_list,img_list):
+        self.cursor.executemany(self.trip_sql,trip_list)
+        print(self.cursor.fetchall())
+        first_id = self.conn.insert_id()
+        for idx , val in enumerate(range(first_id,first_id+len(img_list))):
+            img_list[idx].append(val)
+
+        self.cursor.executemany(self.img_sql,img_list)
+        print(self.cursor.fetchall())
+        self.cursor.connection.commit()
+
     def get_data_from_thumb(self):
         print(str(len(self.browser.find_elements_by_css_selector(".tinyThumb")))+"개 가져와따")
+
+        trip_list=[]
+        img_list=[]
         for thumb in self.browser.find_elements_by_css_selector(".tinyThumb"):
-            self.resDict['media_id'].append(thumb.get_attribute("data-mediaid"))
-            self.resDict['img_url'].append(thumb.get_attribute("data-bigurl"))
-            self.resDict['review_url'].append(thumb.get_attribute("data-reviewurl"))
-            self.resDict['display_date'].append(thumb.get_attribute("data-displaydate"))
+            trip_list.append([thumb.get_attribute("data-mediaid"),thumb.get_attribute("data-reviewurl")])
+            img_list.append([thumb.get_attribute("data-bigurl")])
+
+        self.insert_data(trip_list,img_list)
 
 
 
-        return self.resDict
 
 
     def __del__(self):
         self.browser.close()
         print ("browser closed")
+        self.cursor.close()
 
     def go_next(self):
         origin_url = self.browser.current_url
-        new_url = origin_url.replace(re.findall("\d+", origin_url)[-1], self.resDict["media_id"][-1])
+        sql = 'select trip_gallery_id from trip_metadata order by trip_idx desc limit 1;'
+        self.cursor.execute(sql)
+        last_media_id = self.cursor.fetchone()['trip_gallery_id']
+
+        new_url = origin_url.replace(re.findall("\d+", origin_url)[-1], last_media_id)
         self.browser.get("https://www.tripadvisor.co.kr/")
         self.browser.get(new_url)
         print(new_url)
-        self.browser.implicitly_wait(10)
-        self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': []}
-        # self.browser.execute_script("location.reload();")
         self.browser.implicitly_wait(10)

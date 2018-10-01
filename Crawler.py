@@ -6,19 +6,21 @@ import time
 
 if __name__ == "__main__":
     try:
+        keyword = ['경복궁', '창덕궁', '광화문', '덕수궁', '종묘', '숭례문', '동대문', '경희궁', '보신각']
         start_time = time.time()
-
-        browser = CrawlBrowser()
-        # 일단 경복궁만
+        print("크롤링할 앨범 키워드 입력:")
+        a = input()
+        browser = CrawlBrowser(a)
 
         browser.go_album()
-        resDict = browser.get_data_from_thumb()
-        for i in range(10):
-            # 확인용 프린트
-            #대충 여기서 넣고 디비에 넣고
-            # print(resDict["media_id"])
+
+        # browser.get_data_from_thumb()
+        # browser.insert()
+        for i in range(100):
             browser.go_next()
-            resDict = browser.get_data_from_thumb()
+            browser.get_data_from_thumb()
+
+
 
         print(time.time()-start_time)
 
