@@ -4,22 +4,19 @@ from util.extractor import *
 import pdb
 import time
 
+
 if __name__ == "__main__":
     try:
-        keyword = ['경복궁', '창덕궁', '광화문', '덕수궁', '종묘', '숭례문', '동대문', '경희궁', '보신각']
         start_time = time.time()
-        print("크롤링할 앨범 키워드 입력:")
-        a = input()
-        browser = CrawlBrowser(a)
 
+        print("[0:경복궁, 1:창덕궁, 2:광화문, 3:덕수궁, 4:종묘, 5:숭례문, 6:동대문, 7:경희궁, 8:보신각]")
+        browser = CrawlBrowser(int(input()))
         browser.go_album()
 
-        # browser.get_data_from_thumb()
-        # browser.insert()
-        for i in range(100):
+
+        while(True):
             browser.go_next()
             browser.get_data_from_thumb()
-
 
 
         print(time.time()-start_time)
@@ -28,4 +25,5 @@ if __name__ == "__main__":
     except:
         print("error")
     finally:
+
         print("end")
