@@ -23,7 +23,7 @@ class CrawlBrowser:
     # option = None
     def __init__(self,num):
         options = webdriver.ChromeOptions()
-        # options.add_argument('headless')
+        options.add_argument('headless')
         options.add_argument('window-size=1920x1080')
         options.add_argument("disable-gpu")
         self.browser = webdriver.Chrome('chromedriver', chrome_options=options)
