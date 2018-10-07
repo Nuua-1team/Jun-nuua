@@ -27,10 +27,11 @@ class CrawlBrowser:
         options.add_argument('window-size=1920x1080')
         options.add_argument("disable-gpu")
         self.browser = webdriver.Chrome('chromedriver', chrome_options=options)
-        keywords= ['경복궁', '창덕궁', '광화문', '덕수궁', '종묘', '숭례문', '동대문', '경희궁', '보신각']
+        keywords= ['경복궁', '창덕궁', '광화문', '덕수궁', '종묘', '숭례문', '동대문 (흥인지문)', '경희궁', '보신각']
         self.keyword = keywords[num]
         # self.resDict = {'media_id': [], 'img_url': [], 'review_url': [], 'display_date': [],'keyword':self.keyword}
         self.url = "https://www.tripadvisor.co.kr"
+        self.max_count = 0
         # 나중에 database 클래스를 따로 뺄 예정
         #trip_review_url,trip_gallery_id
 
@@ -70,14 +71,14 @@ class CrawlBrowser:
         self.browser.implicitly_wait(10)
         self.browser.get(self.url)
         self.browser.implicitly_wait(10)
-        max_count = int(self.browser.find_elements_by_css_selector(".see_all_count")[0].get_attribute("textContent").replace(",",""))
+        self.max_count = int(self.browser.find_elements_by_css_selector(".see_all_count")[0].get_attribute("textContent").replace(",",""))
         self.count_sql = '''
         SELECT count(image_idx) count from image_info where search_keyword=%s;
         '''
         # print (self.count_sql % keyword)
         self.cursor.execute(self.count_sql,self.keyword)
         count = int(self.cursor.fetchone()['count'])
-        print("총"+str(max_count)+"개 "+str(count)+"개")
+        print("총"+str(self.max_count)+"개 "+str(count)+"개")
 
         self.browser.execute_script("ta.plc_resp_photo_mosaic_ar_responsive_0_handlers.openPhotoViewer();")
         print("앨범 클릭")
@@ -123,6 +124,9 @@ class CrawlBrowser:
     def go_next(self):
         # pdb.set_trace()
         print("go_next")
+        self.cursor.execute(self.count_sql,self.keyword)
+        count = int(self.cursor.fetchone()['count'])
+        print("총"+str(self.max_count)+"개 "+str(count)+"개")
         origin_url = self.browser.current_url
 
         sql = '''
@@ -132,6 +136,7 @@ class CrawlBrowser:
         where search_keyword=%s
         order by trip_metadata.trip_idx desc limit 1;
         '''
+
         # print((sql % (self.keyword)).replace("\n"," "))
         if self.cursor.execute(sql,self.keyword)==1:
             last_media_id = self.cursor.fetchone()['trip_gallery_id']
@@ -140,4 +145,4 @@ class CrawlBrowser:
             self.browser.get("https://www.tripadvisor.co.kr/")
             self.browser.get(new_url)
             print(new_url)
-            self.browser.implicitly_wait(10)
+            self.browser.implicitly_wait(30)
